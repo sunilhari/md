@@ -1,4 +1,4 @@
-# MDX Browser
+# MD Render
 
 A Tauri desktop app that renders `.md` and `.mdx` files locally — no server, no cloud, no account. Drop in a file and see a live-rendered document with syntax highlighting, diagrams, sortable tables, diffs, and more.
 
@@ -11,7 +11,7 @@ Grab the latest release from the [Releases](../../releases) page:
 | Platform | File |
 |----------|------|
 | macOS (Apple Silicon + Intel) | `MDX.Browser_x.y.z_universal.dmg` |
-| Linux | `mdx-browser_x.y.z_amd64.AppImage` |
+| Linux | `md-render_x.y.z_amd64.AppImage` |
 | Windows | `MDX.Browser_x.y.z_x64-setup.exe` |
 
 > **macOS note:** the app is unsigned. On first launch right-click → **Open**, or run:
@@ -46,7 +46,7 @@ Grab the latest release from the [Releases](../../releases) page:
 
 ## MDX Component Library
 
-MDX Browser ships with nine built-in components. No imports needed — just use them directly in any `.mdx` file.
+MD Render ships with nine built-in components. No imports needed — just use them directly in any `.mdx` file.
 
 ### `<Callout>`
 
@@ -246,8 +246,8 @@ Open with `⌘,` or the gear icon. All settings persist across sessions.
 ### Run in dev mode
 
 ```sh
-git clone https://github.com/your-username/mdx-browser
-cd mdx-browser
+git clone https://github.com/your-username/md-render
+cd md-render
 npm install
 npm run tauri:dev
 ```
@@ -261,7 +261,7 @@ npm run tauri:build
 ```
 
 Output:
-- **macOS:** `src-tauri/target/release/bundle/macos/MDX Browser.app` + `.dmg`
+- **macOS:** `src-tauri/target/release/bundle/macos/MD Render.app` + `.dmg`
 - **Linux:** `src-tauri/target/release/bundle/appimage/*.AppImage`
 - **Windows:** `src-tauri/target/release/bundle/msi/*.msi`
 
@@ -282,7 +282,7 @@ Output:
 
 ## Writing MDX files
 
-MDX Browser auto-renders any `.md` or `.mdx` file. Here's a minimal template:
+MD Render auto-renders any `.md` or `.mdx` file. Here's a minimal template:
 
 ```mdx
 # Document Title

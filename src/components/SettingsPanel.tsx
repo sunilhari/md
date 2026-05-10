@@ -1,5 +1,5 @@
 import { useSettings, PROSE_FONTS, CODE_FONTS, LINE_WIDTHS, LINE_HEIGHTS } from '../context/settings'
-import { useTheme } from '../context/theme'
+import { useTheme, THEMES } from '../context/theme'
 
 interface Props {
   open: boolean
@@ -8,7 +8,7 @@ interface Props {
 
 export function SettingsPanel({ open, onClose }: Props) {
   const { settings, update } = useSettings()
-  const { mode, toggle } = useTheme()
+  const { themeName, setTheme } = useTheme()
 
   return (
     <>
@@ -30,15 +30,14 @@ export function SettingsPanel({ open, onClose }: Props) {
 
           <div className="settings-row">
             <span className="settings-row-label">Theme</span>
-            <div className="settings-chips">
-              <button
-                className={`chip ${mode === 'dark' ? 'active' : ''}`}
-                onClick={() => mode !== 'dark' && toggle()}
-              >Dark</button>
-              <button
-                className={`chip ${mode === 'light' ? 'active' : ''}`}
-                onClick={() => mode !== 'light' && toggle()}
-              >Light</button>
+            <div className="settings-chips stacked">
+              {THEMES.map(t => (
+                <button
+                  key={t.name}
+                  className={`chip ${themeName === t.name ? 'active' : ''}`}
+                  onClick={() => setTheme(t.name)}
+                >{t.label}</button>
+              ))}
             </div>
           </div>
         </section>

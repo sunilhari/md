@@ -92,8 +92,12 @@ function UnknownComponent({
 
 const ALL = { ...CUSTOM, ...HTML_OVERRIDES }
 
-export function createComponentsMap(extraNames: string[] = []): Record<string, React.ComponentType<any>> {
-  const map: Record<string, React.ComponentType<any>> = { ...ALL }
+export function createComponentsMap(
+  extraNames: string[] = [],
+  external: Record<string, React.ComponentType<any>> = {},
+): Record<string, React.ComponentType<any>> {
+  // External components override built-ins; built-ins override placeholders
+  const map: Record<string, React.ComponentType<any>> = { ...ALL, ...external }
   for (const name of extraNames) {
     if (name in map) continue
     const _name = name

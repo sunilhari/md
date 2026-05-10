@@ -3,23 +3,22 @@ import type { Heading } from '../utils/headings'
 
 interface Props {
   headings: Heading[]
+  width?: number
 }
 
-export function Sidebar({ headings }: Props) {
+export function Sidebar({ headings, width }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null)
 
+  // Intersection observer for active heading
   useEffect(() => {
     if (headings.length === 0) return
 
     const observer = new IntersectionObserver(
       entries => {
-        // find the topmost intersecting heading
         const visible = entries
           .filter(e => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id)
-        }
+        if (visible.length > 0) setActiveId(visible[0].target.id)
       },
       { rootMargin: '-8% 0px -82% 0px' },
     )
@@ -29,8 +28,15 @@ export function Sidebar({ headings }: Props) {
     return () => observer.disconnect()
   }, [headings])
 
+  // Restore active from URL hash when headings load
+  useEffect(() => {
+    if (headings.length === 0) return
+    const hash = location.hash.slice(1)
+    if (hash) setActiveId(hash)
+  }, [headings])
+
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={width !== undefined ? { width, minWidth: width } : undefined}>
       {headings.length > 0 && (
         <>
           <div className="sidebar-label">on this page</div>
@@ -47,6 +53,7 @@ export function Sidebar({ headings }: Props) {
                   const el = document.getElementById(h.id)
                   el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   setActiveId(h.id)
+                  history.pushState(null, '', `#${h.id}`)
                 }}
               >
                 {h.text}

@@ -939,3 +939,335 @@ body {
   .diff-body { grid-template-columns: 1fr; }
   .diff-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 3 — NEW FEATURES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Zoom ─────────────────────────────────────────────────────────────────── */
+.app-main { zoom: var(--user-zoom, 1); }
+.header-zoom {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+.active-btn {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* ── Copy button on code blocks ───────────────────────────────────────────── */
+.code-block-wrap {
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+.code-block-wrap:hover .copy-btn { opacity: 1; }
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── Find bar ─────────────────────────────────────────────────────────────── */
+::highlight(find-match)  { background-color: rgba(224,175,104,0.35); color: inherit; }
+::highlight(find-active) { background-color: rgba(224,175,104,0.85); color: #111; }
+
+.find-bar {
+  position: sticky;
+  top: 48px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.find-input {
+  flex: 1;
+  max-width: 280px;
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.12s;
+}
+.find-input:focus { border-color: var(--accent); }
+.find-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 80px;
+  white-space: nowrap;
+}
+.find-nav-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.find-nav-btn:hover { color: var(--accent); border-color: var(--accent); }
+.find-close-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+.find-close-btn:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Sidebar drag resize handle ───────────────────────────────────────────── */
+.resize-handle {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  transition: background 0.12s;
+}
+.resize-handle:hover { background: var(--accent); opacity: 0.5; }
+
+/* ── Split view ───────────────────────────────────────────────────────────── */
+.app-body.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.app-body.split-view .app-main {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  height: calc(100vh - 48px);
+}
+.split-source {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: calc(100vh - 48px);
+}
+.split-source-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--subtle);
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.split-source-pre {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 24px;
+  font-family: var(--user-code-font, var(--mono));
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text2);
+  background: var(--code-bg);
+  white-space: pre;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* ── Recent files on landing ──────────────────────────────────────────────── */
+.recent-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 360px;
+}
+.recent-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--subtle);
+  padding: 0 4px 6px;
+}
+.recent-item {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+}
+.recent-item:hover { border-color: var(--accent); background: rgba(122,162,247,0.04); }
+.recent-kbd {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--subtle);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.recent-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recent-path {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+  text-align: right;
+}
+
+/* ── External import banner ───────────────────────────────────────────────── */
+.import-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  margin-bottom: 24px;
+  background: rgba(122,162,247,0.05);
+  border: 1px solid rgba(122,162,247,0.25);
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text2);
+}
+.import-banner svg { color: var(--accent); flex-shrink: 0; }
+.import-banner strong { color: var(--accent); }
+
+/* ── Rich error view ──────────────────────────────────────────────────────── */
+.rich-error {
+  font-family: var(--mono);
+}
+.error-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.error-loc {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+.error-snippet {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: auto;
+  margin-bottom: 12px;
+}
+.error-line {
+  display: flex;
+  align-items: baseline;
+  min-height: 22px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  position: relative;
+}
+.error-line-active { background: rgba(247,118,142,0.12); }
+.error-lineno {
+  min-width: 44px;
+  padding: 1px 10px;
+  text-align: right;
+  color: var(--subtle);
+  font-size: 11px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  user-select: none;
+}
+.error-line-active .error-lineno { color: var(--danger); }
+.error-linetext {
+  padding: 1px 14px;
+  white-space: pre;
+  flex: 1;
+  color: var(--text2);
+}
+.error-caret {
+  color: var(--danger);
+  font-size: 13px;
+  position: absolute;
+  left: 44px;
+  bottom: 0;
+  pointer-events: none;
+}
+.error-message {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+
+/* ── Print ────────────────────────────────────────────────────────────────── */
+@media print {
+  .app-header,
+  .sidebar,
+  .resize-handle,
+  .find-bar,
+  .split-source,
+  .settings-overlay,
+  .settings-panel,
+  .import-banner { display: none !important; }
+
+  .app-main   { padding: 0 !important; zoom: 1 !important; }
+  .mdx-content { max-width: 100% !important; }
+  .shiki-wrapper { break-inside: avoid; }
+  body { background: #fff !important; color: #000 !important; }
+  .mdx-content * { color: #000 !important; background: transparent !important; }
+}

@@ -8,14 +8,14 @@ export const SHIKI_LANGS = [
 ] as const
 
 export type ShikiLang  = (typeof SHIKI_LANGS)[number]
-export type ShikiTheme = 'tokyo-night' | 'github-light'
+export type ShikiTheme = 'tokyo-night' | 'github-light' | 'one-dark-pro' | 'one-light'
 
 let _promise: Promise<Highlighter> | null = null
 
 export function getHighlighter(): Promise<Highlighter> {
   if (!_promise) {
     _promise = createHighlighter({
-      themes: ['tokyo-night', 'github-light'],
+      themes: ['tokyo-night', 'github-light', 'one-dark-pro', 'one-light'],
       langs: [...SHIKI_LANGS],
     })
   }

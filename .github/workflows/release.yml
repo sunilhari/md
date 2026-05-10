@@ -55,9 +55,9 @@ jobs:
           # APPLE_TEAM_ID:                ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: MDX Browser ${{ github.ref_name }}
+          releaseName: MD Render ${{ github.ref_name }}
           releaseBody: |
-            ## MDX Browser ${{ github.ref_name }}
+            ## MD Render ${{ github.ref_name }}
 
             A Tauri desktop app that renders `.md` and `.mdx` files with a
             rich component library — diagrams, tabs, callouts, diffs, and more.
@@ -121,7 +121,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: MDX Browser ${{ github.ref_name }}
+          releaseName: MD Render ${{ github.ref_name }}
           releaseBody: Linux build
           releaseDraft: ${{ inputs.draft || true }}
           prerelease: false
@@ -153,7 +153,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: MDX Browser ${{ github.ref_name }}
+          releaseName: MD Render ${{ github.ref_name }}
           releaseBody: Windows build
           releaseDraft: ${{ inputs.draft || true }}
           prerelease: false

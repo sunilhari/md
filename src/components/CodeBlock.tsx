@@ -8,9 +8,10 @@ interface Props {
 }
 
 export function CodeBlock({ children, lang }: Props) {
-  const [html, setHtml] = useState<string | null>(null)
+  const [html, setHtml]     = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const { shikiTheme } = useTheme()
-  const code = children.trim()
+  const code    = children.trim()
   const safeLang = normLang(lang)
 
   useEffect(() => {
@@ -27,13 +28,31 @@ export function CodeBlock({ children, lang }: Props) {
     return () => { cancelled = true }
   }, [code, safeLang, shikiTheme])
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch { /* clipboard unavailable */ }
+  }
+
   if (!html) {
     return (
-      <pre className="code-fallback">
-        <code>{code}</code>
-      </pre>
+      <div className="code-block-wrap">
+        <button className="copy-btn" onClick={handleCopy} title="Copy code">
+          {copied ? '✓' : 'Copy'}
+        </button>
+        <pre className="code-fallback"><code>{code}</code></pre>
+      </div>
     )
   }
 
-  return <div className="shiki-wrapper" dangerouslySetInnerHTML={{ __html: html }} />
+  return (
+    <div className="code-block-wrap">
+      <button className="copy-btn" onClick={handleCopy} title="Copy code">
+        {copied ? '✓' : 'Copy'}
+      </button>
+      <div className="shiki-wrapper" dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  )
 }
