@@ -1,25 +1,116 @@
 name: Release
 
-# Triggers on any tag starting with v (e.g. v1.0.0, v0.2.1)
-# Also dispatchable manually from the Actions tab for testing
+# ── Triggers ─────────────────────────────────────────────────────────────────
+# • Push a version tag (v1.2.3) → full automated release
+# • Manual dispatch with a version string → same flow, creates the tag too
 on:
   push:
     tags: ['v[0-9]*']
   workflow_dispatch:
     inputs:
-      draft:
-        description: 'Publish as draft release'
-        type: boolean
-        default: true
+      version:
+        description: 'Version tag to release (e.g. v1.2.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  # ── macOS — universal binary (Apple Silicon + Intel) ─────────────────────
+  # ───────────────────────────────────────────────────────────────────────────
+  # Stage 1 — Create a single draft GitHub release and output its ID.
+  #           All three build jobs attach their artifacts to this release ID.
+  # ───────────────────────────────────────────────────────────────────────────
+  create-release:
+    name: Create draft release
+    runs-on: ubuntu-22.04
+    outputs:
+      release_id: ${{ steps.create.outputs.result }}
+      tag:        ${{ steps.tag.outputs.value }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Work out the tag from whichever trigger fired
+      - name: Resolve tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # When triggered manually the tag doesn't exist yet — create and push it
+      - name: Create git tag (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.email "sunilharih@gmail.com"
+          git config user.name "Sunil Hari"
+          git tag "${{ steps.tag.outputs.value }}"
+          git push origin "${{ steps.tag.outputs.value }}"
+
+      # Create the GitHub release as a draft; returns its numeric ID
+      - name: Create draft release
+        id: create
+        uses: actions/github-script@v7
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
+        with:
+          result-encoding: string
+          script: |
+            const tag = process.env.TAG
+            const { data } = await github.rest.repos.createRelease({
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              tag_name:   tag,
+              name:       `MD Render ${tag}`,
+              draft:      true,
+              prerelease: false,
+              body: [
+                `## MD Render ${tag}`,
+                '',
+                'A Tauri desktop app that renders `.md` and `.mdx` files locally — no server, no cloud, no account.',
+                '',
+                '### Install',
+                '',
+                '| Platform | File |',
+                '|----------|------|',
+                '| macOS (Apple Silicon + Intel) | `MD.Render_*.dmg` |',
+                '| Linux | `md-render_*_amd64.AppImage` |',
+                '| Windows | `MD.Render_*_x64-setup.exe` |',
+                '',
+                '> **macOS:** the app is unsigned. After installing, right-click → **Open**, or run:',
+                '> ```',
+                '> xattr -cr /Applications/MD\\ Render.app',
+                '> ```',
+                '',
+                '### Keyboard shortcuts',
+                '',
+                '| Action | Shortcut |',
+                '|--------|----------|',
+                '| Open file | `⌘O` |',
+                '| Command palette | `⌘K` |',
+                '| Find in document | `⌘F` |',
+                '| Toggle settings | `⌘,` |',
+                '| Split view | `⌘\\` |',
+                '| Print / Export PDF | `⌘P` |',
+                '| Zoom in / out / reset | `⌘+` / `⌘−` / `⌘0` |',
+                '| Back / Forward | `⌘[` / `⌘]` |',
+              ].join('\n'),
+            })
+            return String(data.id)
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Stage 2a — macOS universal binary (Apple Silicon + Intel)
+  # ───────────────────────────────────────────────────────────────────────────
   build-macos:
-    name: macOS (universal)
+    name: Build · macOS (universal)
+    needs: create-release
     runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -39,13 +130,12 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
-      - name: Build & publish release
+      - name: Build and upload
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: set these secrets in repo settings to code-sign the app.
-          # Without them the app builds fine but macOS will show a security
-          # warning on first launch (right-click → Open to bypass Gatekeeper).
+          # Uncomment these secrets in repo Settings → Secrets to code-sign the app.
+          # Without them the build still works; macOS shows a Gatekeeper warning.
           #
           # APPLE_CERTIFICATE:            ${{ secrets.APPLE_CERTIFICATE }}
           # APPLE_CERTIFICATE_PASSWORD:   ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -54,41 +144,17 @@ jobs:
           # APPLE_PASSWORD:               ${{ secrets.APPLE_PASSWORD }}
           # APPLE_TEAM_ID:                ${{ secrets.APPLE_TEAM_ID }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: MD Render ${{ github.ref_name }}
-          releaseBody: |
-            ## MD Render ${{ github.ref_name }}
-
-            A Tauri desktop app that renders `.md` and `.mdx` files with a
-            rich component library — diagrams, tabs, callouts, diffs, and more.
-
-            ### Install
-
-            | Platform | File |
-            |----------|------|
-            | macOS (Apple Silicon + Intel) | `.dmg` |
-
-            > **First launch on macOS:** the app is unsigned. Right-click the
-            > `.app` → **Open** to bypass Gatekeeper, or run:
-            > ```
-            > xattr -cr /Applications/MDX\ Browser.app
-            > ```
-
-            ### Keyboard shortcuts
-
-            | Action | Shortcut |
-            |--------|----------|
-            | Open file | `⌘O` |
-            | Settings | `⌘,` |
-            | Close settings | `Esc` |
-          releaseDraft: ${{ inputs.draft || true }}
-          prerelease: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
           args: --target universal-apple-darwin
 
-  # ── Linux ─────────────────────────────────────────────────────────────────
+  # ───────────────────────────────────────────────────────────────────────────
+  # Stage 2b — Linux AppImage
+  # ───────────────────────────────────────────────────────────────────────────
   build-linux:
-    name: Linux (x86_64)
+    name: Build · Linux (x86_64)
+    needs: create-release
     runs-on: ubuntu-22.04
+
     steps:
       - uses: actions/checkout@v4
 
@@ -105,7 +171,7 @@ jobs:
 
       - name: Install Linux WebKit dependencies
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
@@ -115,21 +181,21 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
-      - name: Build & publish release
+      - name: Build and upload
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: MD Render ${{ github.ref_name }}
-          releaseBody: Linux build
-          releaseDraft: ${{ inputs.draft || true }}
-          prerelease: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
 
-  # ── Windows ───────────────────────────────────────────────────────────────
+  # ───────────────────────────────────────────────────────────────────────────
+  # Stage 2c — Windows NSIS installer
+  # ───────────────────────────────────────────────────────────────────────────
   build-windows:
-    name: Windows (x86_64)
+    name: Build · Windows (x86_64)
+    needs: create-release
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -147,13 +213,30 @@ jobs:
       - name: Install JS dependencies
         run: npm ci
 
-      - name: Build & publish release
+      - name: Build and upload
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: MD Render ${{ github.ref_name }}
-          releaseBody: Windows build
-          releaseDraft: ${{ inputs.draft || true }}
-          prerelease: false
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Stage 3 — Flip the draft to published once all three builds succeed.
+  #           If any build fails the draft stays unpublished (safe to retry).
+  # ───────────────────────────────────────────────────────────────────────────
+  publish-release:
+    name: Publish release
+    needs: [create-release, build-macos, build-linux, build-windows]
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Publish draft → live
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.updateRelease({
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              release_id: ${{ needs.create-release.outputs.release_id }},
+              draft:      false,
+            })
