@@ -4,19 +4,29 @@ A Tauri desktop app that renders `.md` and `.mdx` files locally — no server, n
 
 ---
 
+## Why
+
+Writing technical docs, architecture notes, and runbooks in Markdown is fast — but previewing them well is not. Browser extensions break on local files. VS Code's preview is functional but not beautiful. Notion requires uploading. Obsidian is opinionated about vault structure.
+
+MD Render exists to be the thing you reach for when you just want to **read a Markdown file properly**: with a clean typography, syntax-highlighted code, diagrams that render, a table of contents, and zero friction. Open the file, read it, close it. No sync, no account, no cloud.
+
+MDX support means you can embed interactive components — sortable tables, diffs, timelines, sliders — directly in your documentation without any build step. The custom components load immediately from the local component library, and any missing component is shown as a labeled placeholder instead of crashing.
+
+---
+
 ## Download
 
 Grab the latest release from the [Releases](../../releases) page:
 
 | Platform | File |
 |----------|------|
-| macOS (Apple Silicon + Intel) | `MDX.Browser_x.y.z_universal.dmg` |
+| macOS (Apple Silicon + Intel) | `MD.Render_x.y.z_universal.dmg` |
 | Linux | `md-render_x.y.z_amd64.AppImage` |
-| Windows | `MDX.Browser_x.y.z_x64-setup.exe` |
+| Windows | `MD.Render_x.y.z_x64-setup.exe` |
 
 > **macOS note:** the app is unsigned. On first launch right-click → **Open**, or run:
 > ```sh
-> xattr -cr /Applications/MDX\ Browser.app
+> xattr -cr /Applications/MD\ Render.app
 > ```
 
 ---

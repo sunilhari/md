@@ -3,6 +3,8 @@ import type { ReactNode, ErrorInfo } from 'react'
 import { evaluate } from '@mdx-js/mdx'
 import { Fragment, jsx, jsxs } from 'react/jsx-runtime'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import ReactMarkdown from 'react-markdown'
 import { createComponentsMap } from './index'
 import { extractHeadings } from '../utils/headings'
@@ -198,7 +200,8 @@ export function MDXRenderer({ content, fileName, onHeadings }: Props) {
       Fragment,
       jsx:  jsx  as Parameters<typeof evaluate>[1]['jsx'],
       jsxs: jsxs as Parameters<typeof evaluate>[1]['jsxs'],
-      remarkPlugins: [remarkGfm],
+      remarkPlugins: [remarkGfm, remarkMath],
+      rehypePlugins: [rehypeKatex],
     })
       .then(({ default: Comp }) => {
         if (!cancelled) setMDXComp(() => Comp as MDXContent)

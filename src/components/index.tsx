@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Diagram }       from './Diagram'
 import { Tabs }          from './Tabs'
@@ -11,6 +11,9 @@ import { Timeline }      from './Timeline'
 import { DiffView }      from './DiffView'
 import { CodeBlock }     from './CodeBlock'
 import { childrenToText, slugify } from '../utils/headings'
+import { useFilePath }   from '../context/filePath'
+
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 // ── MDX custom components ─────────────────────────────────────────────────
 const CUSTOM: Record<string, React.ComponentType<any>> = {
@@ -40,11 +43,55 @@ function Code({ className, children }: { className?: string; children?: ReactNod
   return <code className="inline-code">{children}</code>
 }
 
+// ── Local image resolution ────────────────────────────────────────────────
+function Img({ src, alt, ...rest }: React.ImgHTMLAttributes<HTMLImageElement>) {
+  const dir = useFilePath()
+  const [resolvedSrc, setResolvedSrc] = useState(src)
+
+  useEffect(() => {
+    if (!src || !dir || !isTauri || /^(https?:|data:)/.test(src)) {
+      setResolvedSrc(src)
+      return
+    }
+    ;(async () => {
+      try {
+        const { convertFileSrc } = await import('@tauri-apps/api/core')
+        const abs = src.startsWith('/') ? src : `${dir}/${src}`.replace(/\/\//g, '/')
+        setResolvedSrc(convertFileSrc(abs))
+      } catch { setResolvedSrc(src) }
+    })()
+  }, [src, dir])
+
+  return <img src={resolvedSrc} alt={alt} {...rest} />
+}
+
+// ── Interactive task-list checkboxes ──────────────────────────────────────
+function TaskInput({
+  type,
+  defaultChecked,
+  checked: _checked,
+  disabled: _disabled,
+  ...rest
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  const [on, setOn] = useState(defaultChecked ?? _checked ?? false)
+  if (type !== 'checkbox') return <input type={type} {...rest} />
+  return (
+    <input
+      type="checkbox"
+      checked={on}
+      onChange={e => setOn(e.target.checked)}
+      className="task-checkbox"
+    />
+  )
+}
+
 const HTML_OVERRIDES: Record<string, React.ComponentType<any>> = {
   h1: makeHeading(1), h2: makeHeading(2), h3: makeHeading(3),
   h4: makeHeading(4), h5: makeHeading(5), h6: makeHeading(6),
   pre: Pre,
   code: Code,
+  img: Img,
+  input: TaskInput,
 }
 
 // ── Unknown-component placeholder ─────────────────────────────────────────
