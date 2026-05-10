@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+    ignore:
+      # glib < 0.20 is a transitive dep pinned by Tauri's Linux GTK stack.
+      # Cannot be updated from this repo — fix must come from upstream Tauri.
+      - dependency-name: glib
+        versions: ["< 0.20.0"]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
