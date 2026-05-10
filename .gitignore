@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Tauri build artifacts — the target dir is large (~2 GB after first build)
+src-tauri/target/
+
+# Vite cache
+.vite/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+
+# TypeScript incremental build
+*.tsbuildinfo

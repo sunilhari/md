@@ -1,0 +1,11 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for MDX Browser",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "fs:allow-read-text-file",
+    "fs:allow-read-file"
+  ]
+}

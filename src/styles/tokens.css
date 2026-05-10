@@ -1,0 +1,67 @@
+/* ── Design tokens ───────────────────────────────────────────────────────── */
+/* Dark (Tokyo Night) is the default; [data-theme="light"] overrides below. */
+:root,
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg:       #1a1b26;
+  --surface:  #16161e;
+  --surface2: #1f2335;
+  --surface3: #24283b;
+
+  /* Borders */
+  --border:   #292e42;
+  --border2:  #3b4261;
+
+  /* Accent palette */
+  --accent:   #7aa2f7;   /* blue      — primary actions, headings */
+  --accent2:  #bb9af7;   /* purple    — h2, links, info */
+  --warn:     #e0af68;   /* gold      — warnings */
+  --danger:   #f7768e;   /* pink-red  — errors, danger */
+  --tip:      #9ece6a;   /* green     — tip callouts */
+
+  /* Text */
+  --text:     #c0caf5;
+  --text2:    #a9b1d6;
+  --muted:    #565f89;
+  --subtle:   #414868;
+
+  /* Typography */
+  --mono: 'IBM Plex Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+
+  /* Code block background (overrides shiki inline style) */
+  --code-bg: #13141f;
+
+  /* Spacing / shape */
+  --radius:    6px;
+  --radius-sm: 4px;
+  --radius-lg: 10px;
+}
+
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg:       #f7f7fb;
+  --surface:  #ffffff;
+  --surface2: #f0f0f5;
+  --surface3: #e8e8f0;
+
+  /* Borders */
+  --border:   #dde0eb;
+  --border2:  #c8ccd8;
+
+  /* Accent palette (darker for contrast on white) */
+  --accent:   #2f5de1;
+  --accent2:  #7c35d4;
+  --warn:     #8a6100;
+  --danger:   #c01530;
+  --tip:      #1a6e3c;
+
+  /* Text */
+  --text:     #1a1d2e;
+  --text2:    #3d4260;
+  --muted:    #7a80a0;
+  --subtle:   #b0b6cc;
+
+  /* Code block background */
+  --code-bg: #f6f8fa;
+}

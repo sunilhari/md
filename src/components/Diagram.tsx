@@ -1,0 +1,99 @@
+import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { childrenToText } from '../utils/headings'
+
+// Lazy-load mermaid so it doesn't land in the initial bundle.
+let mermaidPromise: Promise<typeof import('mermaid')['default']> | null = null
+
+function getMermaid() {
+  if (!mermaidPromise) {
+    mermaidPromise = import('mermaid').then(m => {
+      m.default.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        darkMode: true,
+        themeVariables: {
+          background:          '#1a1b26',
+          mainBkg:             '#1f2335',
+          nodeBorder:          '#292e42',
+          clusterBkg:          '#16161e',
+          titleColor:          '#c0caf5',
+          edgeLabelBackground: '#1f2335',
+          lineColor:           '#7aa2f7',
+          primaryColor:        '#1f2335',
+          primaryTextColor:    '#c0caf5',
+          primaryBorderColor:  '#292e42',
+          secondaryColor:      '#16161e',
+          tertiaryColor:       '#13141f',
+          textColor:           '#a9b1d6',
+          labelTextColor:      '#c0caf5',
+          actorBkg:            '#1f2335',
+          actorBorder:         '#292e42',
+          actorTextColor:      '#c0caf5',
+          signalColor:         '#7aa2f7',
+          signalTextColor:     '#c0caf5',
+        },
+      })
+      return m.default
+    })
+  }
+  return mermaidPromise
+}
+
+let idSeq = 0
+
+interface Props {
+  type?: string
+  children?: ReactNode
+  code?: string   // alternative to children — avoids MDX markdown-processing the content
+}
+
+export function Diagram({ type: _type = 'mermaid', children, code: codeProp }: Props) {
+  const ref   = useRef<HTMLDivElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // MDX may wrap raw text in <p> elements; childrenToText unwraps them
+  const code = (codeProp ?? childrenToText(children)).trim()
+
+  useEffect(() => {
+    if (!code) return
+    let cancelled = false
+    setError(null)
+    setLoading(true)
+
+    const id = `mdx-diagram-${++idSeq}`
+    getMermaid()
+      .then(mermaid => mermaid.render(id, code))
+      .then(({ svg }) => {
+        if (!cancelled && ref.current) {
+          ref.current.innerHTML = svg
+          setLoading(false)
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          setError(String((err as Error).message ?? err))
+          setLoading(false)
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [code])
+
+  if (error) {
+    return (
+      <div className="diagram-error">
+        <strong>Diagram error</strong>
+        <pre>{error}</pre>
+      </div>
+    )
+  }
+
+  return (
+    <div className="diagram-wrapper">
+      {loading && <span style={{ color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: '12px' }}>loading diagram…</span>}
+      <div ref={ref} />
+    </div>
+  )
+}
