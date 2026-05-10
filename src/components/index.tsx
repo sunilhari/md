@@ -24,7 +24,7 @@ const CUSTOM: Record<string, React.ComponentType<any>> = {
 // ── HTML element overrides ────────────────────────────────────────────────
 
 function makeHeading(level: 1|2|3|4|5|6) {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements
+  const Tag = `h${level}` as keyof React.JSX.IntrinsicElements
   return function Heading({ children }: { children?: ReactNode }) {
     const id = slugify(childrenToText(children))
     return React.createElement(Tag, { id }, children)

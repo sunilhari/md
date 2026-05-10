@@ -1,7 +1,7 @@
 name: Release
 
 # ── Triggers ─────────────────────────────────────────────────────────────────
-# • Push a version tag (v1.2.3) → full automated release
+# • Push a version tag (v1.2.3) → builds all platforms, leaves release as draft
 # • Manual dispatch with a version string → same flow, creates the tag too
 on:
   push:
@@ -12,6 +12,9 @@ on:
         description: 'Version tag to release (e.g. v1.2.0)'
         required: true
         type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: write
@@ -221,22 +224,6 @@ jobs:
           releaseId: ${{ needs.create-release.outputs.release_id }}
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Stage 3 — Flip the draft to published once all three builds succeed.
-  #           If any build fails the draft stays unpublished (safe to retry).
+  # Stage 3 — All builds done; release stays as draft for manual review.
+  #           Go to Releases in GitHub and click "Publish release" when ready.
   # ───────────────────────────────────────────────────────────────────────────
-  publish-release:
-    name: Publish release
-    needs: [create-release, build-macos, build-linux, build-windows]
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Publish draft → live
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.repos.updateRelease({
-              owner:      context.repo.owner,
-              repo:       context.repo.repo,
-              release_id: ${{ needs.create-release.outputs.release_id }},
-              draft:      false,
-            })
