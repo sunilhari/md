@@ -6,11 +6,15 @@ A Tauri desktop app that renders `.md` and `.mdx` files locally — no server, n
 
 ## Why
 
-Writing technical docs, architecture notes, and runbooks in Markdown is fast — but previewing them well is not. Browser extensions break on local files. VS Code's preview is functional but not beautiful. Notion requires uploading. Obsidian is opinionated about vault structure.
+Markdown has become the default language of AI agents. Every plan, every spec, every structured response comes back as `.md`. That's fine — until the output grows beyond what flat text can express.
 
-MD Render exists to be the thing you reach for when you just want to **read a Markdown file properly**: with a clean typography, syntax-highlighted code, diagrams that render, a table of contents, and zero friction. Open the file, read it, close it. No sync, no account, no cloud.
+Agents are increasingly producing content that doesn't fit neatly in a paragraph: comparison tables, step-by-step timelines, before/after diffs, architecture diagrams, interactive sliders for configuration options, annotated code walkthroughs. Markdown lets you *write* these things, but renders them as walls of code fences and raw JSX that the reader has to mentally parse.
 
-MDX support means you can embed interactive components — sortable tables, diffs, timelines, sliders — directly in your documentation without any build step. The custom components load immediately from the local component library, and any missing component is shown as a labeled placeholder instead of crashing.
+The format has become a bottleneck. Richer outputs are possible — HTML and MDX can carry interactive, visually structured content — but the tooling assumes you have a build pipeline and a browser tab open to localhost.
+
+MD Render closes that gap. Drop any `.md` or `.mdx` file and it renders immediately, locally, with no server and no account. The built-in component library covers the things agents and humans most commonly need: diagrams, diffs, timelines, sortable tables, tabbed code blocks, callouts. You can also pull in any React component from npm — no install, no bundler — by listing it in the file's frontmatter.
+
+The goal is simple: make rich Markdown as frictionless to read as plain Markdown.
 
 ---
 
@@ -229,6 +233,48 @@ Any `<ComponentName>` that isn't registered renders as a labeled placeholder —
 
 ---
 
+## Bring Your Own Components
+
+MD Render can load any React component from npm — no install, no bundler, no build step. Add a `components` map to the file's YAML frontmatter and MD Render fetches the packages from [esm.sh](https://esm.sh) at render time.
+
+```mdx
+---
+components:
+  Button: "@radix-ui/themes"
+  BarChart: recharts
+  LineChart: recharts
+  Alert: "@mui/material"
+---
+
+# Sales Dashboard
+
+<Alert severity="info">Figures are updated daily at 00:00 UTC.</Alert>
+
+<BarChart width={600} height={300} data={[
+  { name: "Jan", revenue: 4000 },
+  { name: "Feb", revenue: 3000 },
+  { name: "Mar", revenue: 5200 },
+]} />
+
+<Button variant="solid" size="3">Download CSV</Button>
+```
+
+**How it works:**
+
+Each `ComponentName: "package"` entry tells MD Render to `import("https://esm.sh/package")` and look for a named export called `ComponentName` (falling back to `default`). The import happens once, cached for the session.
+
+A yellow banner at the top of the rendered document lists every package that was loaded, so you always know what third-party code is running.
+
+**Tips:**
+
+- Works with any package that ships ES modules: Recharts, Radix UI, MUI, Tremor, Ant Design, custom chart libraries, etc.
+- Scoped packages work: `Alert: "@mui/material"` imports `Alert` from `https://esm.sh/@mui/material`
+- You can map multiple components from the same package: list them separately with the same package name
+- Built-in components (`Callout`, `Diagram`, `Tabs`, etc.) always take precedence — you can't accidentally override them
+- Packages that require a DOM environment or native Node modules won't work; pure React UI libraries do
+
+---
+
 ## Settings
 
 Open with `⌘,` or the gear icon. All settings persist across sessions.
@@ -256,8 +302,8 @@ Open with `⌘,` or the gear icon. All settings persist across sessions.
 ### Run in dev mode
 
 ```sh
-git clone https://github.com/your-username/md-render
-cd md-render
+git clone https://github.com/sunilhari/md
+cd md
 npm install
 npm run tauri:dev
 ```
@@ -273,7 +319,7 @@ npm run tauri:build
 Output:
 - **macOS:** `src-tauri/target/release/bundle/macos/MD Render.app` + `.dmg`
 - **Linux:** `src-tauri/target/release/bundle/appimage/*.AppImage`
-- **Windows:** `src-tauri/target/release/bundle/msi/*.msi`
+- **Windows:** `src-tauri/target/release/bundle/nsis/*.exe`
 
 ### Create a release
 
